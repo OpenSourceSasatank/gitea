@@ -17,6 +17,9 @@ var (
 
 // Session checks if there is a user uid stored in the session and returns the user
 // object for that uid.
+// 【読み順 STEP 4a】最もシンプルな認証方式の実装例。
+// セッションストアから uid を取得し、ユーザーを返すだけ。
+// Web ルートでは最後に試される（ログイン済みユーザーの確認用）。
 type Session struct{}
 
 // Name represents the name of auth method

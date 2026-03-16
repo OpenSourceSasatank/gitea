@@ -24,6 +24,10 @@ import (
 )
 
 // Permission contains all the permissions related variables to a repository for a user
+// 【読み順 STEP 6】リポジトリに対するユーザーの権限を表す構造体。
+// AccessMode はリポジトリ全体の権限、unitsMode は Unit（Code, Issues 等）ごとの権限。
+// 権限チェック時は CanRead(unitType), CanWrite(unitType), IsAdmin() 等を使う。
+// この構造体は GetUserRepoPermission() で構築され、ctx.Repo.Permission に格納される。
 type Permission struct {
 	AccessMode perm_model.AccessMode
 
@@ -303,6 +307,13 @@ func GetActionsUserRepoPermission(ctx context.Context, repo *repo_model.Reposito
 }
 
 // GetUserRepoPermission returns the user permissions to the repository
+// 【読み順 STEP 7】権限解決の核心。以下の優先順で権限を決定する:
+//   1. 匿名 + プライベートリポ → AccessModeNone
+//   2. 匿名 + 公開リポ → AccessModeRead
+//   3. サイト管理者 or リポオーナー → AccessModeOwner
+//   4. access テーブル参照（コラボレータ権限のキャッシュ）
+//   5. 組織の場合: チームごとの Unit 権限を集計し最大値を採用
+// 結果は ctx.Repo.Permission に格納され、ミドルウェアで参照される。
 func GetUserRepoPermission(ctx context.Context, repo *repo_model.Repository, user *user_model.User) (perm Permission, err error) {
 	defer func() {
 		if err == nil {

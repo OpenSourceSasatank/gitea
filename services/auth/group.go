@@ -16,6 +16,10 @@ var (
 )
 
 // Group implements the Auth interface with serval Auth.
+// 【読み順 STEP 3】複数の認証方式を合成するコンポジットパターン。
+// Web 用と API 用で異なる認証グループを構成できる。
+// 例: API 用 → NewGroup(&OAuth2{}, &HTTPSign{}, &Basic{})
+//     Web 用 → NewGroup(&Session{}) + 条件付きで OAuth2, Basic, ReverseProxy を追加
 type Group struct {
 	methods []Method
 }
@@ -41,6 +45,12 @@ func (b *Group) Name() string {
 	return strings.Join(names, ",")
 }
 
+// Verify は登録された認証方式を順番に試し、最初に成功したユーザーを返す。
+// 【読み順 STEP 3 続き】認証チェーンの核心ロジック:
+//   1. 各 Method.Verify() を順に呼ぶ
+//   2. user が返れば即座に成功（以降の方式はスキップ）
+//   3. error が返っても次の方式を試す（同じヘッダを複数方式が読む場合がある）
+//   4. 全方式で user が見つからなければ、最初のエラーを返す
 func (b *Group) Verify(req *http.Request, w http.ResponseWriter, store DataStore, sess SessionStore) (*user_model.User, error) {
 	// Try to sign in with each of the enabled plugins
 	var retErr error

@@ -11,15 +11,17 @@ import (
 )
 
 // AccessMode specifies the users access mode
+// 【読み順 STEP 1】認証・認可の出発点。int 型なので大小比較（>=）で権限チェックできる。
+// 例: if userMode >= AccessModeWrite { /* 書き込み許可 */ }
 type AccessMode int
 
 const (
-	AccessModeNone AccessMode = iota // 0: no access
+	AccessModeNone AccessMode = iota // 0: アクセス不可 — 未認証ユーザーまたは権限なし
 
-	AccessModeRead  // 1: read access
-	AccessModeWrite // 2: write access
-	AccessModeAdmin // 3: admin access
-	AccessModeOwner // 4: owner access
+	AccessModeRead  // 1: 読み取り — 公開リポジトリの匿名アクセスはここ
+	AccessModeWrite // 2: 書き込み — コラボレータのデフォルト権限
+	AccessModeAdmin // 3: 管理者 — リポジトリ設定の変更が可能
+	AccessModeOwner // 4: オーナー — リポジトリ所有者・サイト管理者・ Owners チームメンバー
 )
 
 // ToString returns the string representation of the access mode, do not make it a Stringer, otherwise it's difficult to render in templates

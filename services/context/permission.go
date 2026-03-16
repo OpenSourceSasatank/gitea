@@ -13,6 +13,9 @@ import (
 )
 
 // RequireRepoAdmin returns a middleware for requiring repository admin permission
+// 【読み順 STEP 8】認可ミドルウェア。ルーティング定義で宣言的に権限チェックを行う。
+// 例: m.Get("/settings", RequireRepoAdmin(), repo.Settings)
+// Permission 構造体の IsAdmin(), CanWrite(), CanRead() を使って判定する。
 func RequireRepoAdmin() func(ctx *Context) {
 	return func(ctx *Context) {
 		if !ctx.IsSigned || !ctx.Repo.IsAdmin() {

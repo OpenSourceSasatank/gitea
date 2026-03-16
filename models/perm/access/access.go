@@ -22,6 +22,10 @@ import (
 // Access represents the highest access level of a user to the repository. The only access type
 // that is not in this table is the real owner of a repository. In case of an organization
 // repository, the members of the owners team are in this table.
+//
+// 【読み順 STEP 6 補足】権限キャッシュテーブル。コラボレータ権限やチーム権限の最大値を
+// 事前計算して保存する非正規化テーブル。権限変更時に RecalculateAccesses() で再構築される。
+// GetUserRepoPermission() (STEP 7) が高速に権限を取得するために使用する。
 type Access struct {
 	ID     int64 `xorm:"pk autoincr"`
 	UserID int64 `xorm:"UNIQUE(s)"`

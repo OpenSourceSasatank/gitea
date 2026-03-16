@@ -38,6 +38,12 @@ type Render interface {
 // ATTENTION: This struct should never be manually constructed in routes/services,
 // it has many internal details which should be carefully prepared by the framework.
 // If it is abused, it would cause strange bugs like panic/resource-leak.
+//
+// 【読み順 STEP 9】認証・認可の結果が集約される場所。
+// - Doer: 認証されたユーザー（STEP 5 で AuthShared が設定）
+// - Repo.Permission: 権限情報（STEP 7 で GetUserRepoPermission が設定）
+// - IsSigned: ログイン済みフラグ
+// ハンドラでは ctx.Doer, ctx.Repo.CanWrite() 等でアクセス制御を行う。
 type Context struct {
 	*Base
 

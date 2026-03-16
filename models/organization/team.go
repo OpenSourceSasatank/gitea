@@ -71,6 +71,9 @@ func (err ErrTeamNotExist) Unwrap() error {
 const OwnerTeamName = "Owners"
 
 // Team represents a organization team.
+// 【読み順 STEP 7 補足】組織のチーム。AccessMode はチーム全体のデフォルト権限。
+// Units フィールドで Unit (Code, Issues 等) ごとに異なる権限を設定可能。
+// GetUserRepoPermission() で全チームの Unit 権限を集計し、最大値を採用する。
 type Team struct {
 	ID                      int64 `xorm:"pk autoincr"`
 	OrgID                   int64 `xorm:"INDEX"`

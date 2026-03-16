@@ -18,6 +18,11 @@ type DataStore = reqctx.ContextDataProvider
 type SessionStore session.Store
 
 // Method represents an authentication method (plugin) for HTTP requests.
+// 【読み順 STEP 2】認証プラグインのインターフェース。Session, Basic, OAuth2 等がこれを実装する。
+// 戻り値の規約:
+//   - (*user, nil)  → 認証成功。このユーザーでリクエストを処理する
+//   - (nil, nil)    → この認証方式では判定不可。Group が次の方式を試す
+//   - (nil, error)  → 認証失敗。エラーを記録しつつ次の方式も試す
 type Method interface {
 	// Verify tries to verify the authentication data contained in the request.
 	// If verification succeeds, it returns either an existing user object (with id > 0)
