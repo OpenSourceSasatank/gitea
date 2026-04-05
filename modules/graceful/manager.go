@@ -15,6 +15,10 @@ import (
 	"code.gitea.io/gitea/modules/setting"
 )
 
+// 【読み順 STEP 1】状態マシンの定義。Graceful Shutdown の全体を支配する 4 つの状態。
+//   Init → Running → ShuttingDown → Terminate
+//   各状態遷移は setStateTransition() でアトミックに行われる。
+//   STEP 3（manager_common.go）の Manager 構造体がこの状態を保持する。
 type state uint8
 
 const (
@@ -125,6 +129,13 @@ func (g *Manager) RunAtShutdown(ctx context.Context, shutdown func()) {
 		})
 }
 
+// 【読み順 STEP 1+】シャットダウンの核心ロジック。
+//   1. 状態を Running → ShuttingDown に遷移（二重呼び出し時は即 Hammer）
+//   2. shutdownCtx をキャンセル → 全 ShutdownContext 利用者に通知
+//   3. toRunAtShutdown コールバックを並行実行
+//   4. GracefulHammerTime 後に doHammerTime() をスケジュール
+//   5. runningServerWaitGroup.Wait() で全サーバー停止を待機
+//   6. doTerminate() → terminateWaitGroup.Wait() → managerCtx キャンセル（完全終了）
 func (g *Manager) doShutdown() {
 	if !g.setStateTransition(stateRunning, stateShuttingDown) {
 		g.DoImmediateHammer()

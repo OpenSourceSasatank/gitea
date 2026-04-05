@@ -43,6 +43,12 @@ func (g *Manager) notify(msg systemdNotifyMsg) {
 	}
 }
 
+// 【読み順 STEP 4】Unix プラットフォームの起動処理。
+//   1. 子プロセスかどうかを LISTEN_FDS 環境変数で判定
+//   2. systemd に STATUS 通知を送信
+//   3. handleSignals() ゴルーチンを起動（STEP 5）
+//   4. 全サーバーの起動完了を待ち、systemd に READY=1 を通知
+//   5. StartupTimeout を超過した場合は自動シャットダウン
 func (g *Manager) start() {
 	// Now label this and all goroutines created by this goroutine with the graceful-lifecycle manager
 	pprof.SetGoroutineLabels(g.managerCtx)
@@ -97,6 +103,14 @@ func (g *Manager) start() {
 	}
 }
 
+// 【読み順 STEP 5】Unix シグナルハンドリング — 外部からの制御ポイント。
+//   SIGHUP  → Graceful Restart（STEP 9: fork+exec で新プロセス起動）
+//   SIGUSR1 → ログファイルの再オープン（logrotate 対応, STEP 10）
+//   SIGUSR2 → Immediate Hammer（強制終了）
+//   SIGINT  → Graceful Shutdown（STEP 1 の状態遷移を開始）
+//   SIGTERM → Graceful Shutdown（同上）
+//   SIGTSTP → ログ記録のみ
+//   また、systemd Watchdog タイマーにも対応（WATCHDOG=1 を定期送信）。
 func (g *Manager) handleSignals(ctx context.Context) {
 	ctx, _, finished := process.GetManager().AddTypedContext(ctx, "Graceful: HandleSignals", process.SystemProcessType, true)
 	defer finished()

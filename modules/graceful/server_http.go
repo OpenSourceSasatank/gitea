@@ -10,6 +10,11 @@ import (
 	"net/http"
 )
 
+// 【読み順 STEP 8】HTTP サーバーファクトリ — Graceful Server と http.Server の統合。
+//   - BaseContext に HammerContext() を設定 → Hammer 時にリクエストの ctx が Done になる
+//   - OnShutdown で KeepAlive を無効化 → 既存接続の再利用を停止
+//   HTTPListenAndServe / HTTPListenAndServeTLSConfig が公開 API。
+//   STEP 11（cmd/web.go）でエントリポイントからの呼び出しを確認。
 func newHTTPServer(network, address, name string, handler http.Handler) (*Server, ServeFunction) {
 	server := NewServer(network, address, name)
 	httpServer := http.Server{

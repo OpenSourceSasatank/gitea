@@ -27,6 +27,13 @@ var GetListener = DefaultGetListener
 // ServeFunction represents a listen.Accept loop
 type ServeFunction = func(net.Listener) error
 
+// 【読み順 STEP 6】Graceful Server — コネクション追跡付きサーバー。
+//   - wrappedListener でコネクション受付時にカウンタを増加
+//   - wrappedConn で Close 時にカウンタを減少
+//   - waitForActiveConnections() で全コネクション完了を待機
+//   - closeAllConnections() で Hammer 時に強制切断
+//   STEP 7（server_hooks.go）で shutdown/hammer のフックを確認。
+//   STEP 8（server_http.go）で HTTP サーバーとの統合を確認。
 // Server represents our graceful server
 type Server struct {
 	network  string

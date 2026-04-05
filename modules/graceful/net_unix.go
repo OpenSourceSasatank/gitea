@@ -47,6 +47,10 @@ var (
 	watchdogTimeout  time.Duration
 )
 
+// 【読み順 STEP 9+】FD 継承の受信側 — 親プロセスから渡されたリスナーを復元。
+//   環境変数 LISTEN_FDS の数だけ FD 3 から順にリスナーとして復元する。
+//   同時に NOTIFY_SOCKET（systemd）と WATCHDOG_USEC も処理する。
+//   STEP 9（restart_unix.go）の RestartProcess() と対になる。
 func getProvidedFDs() (savedErr error) {
 	// Only inherit the provided FDS once but we will save the error so that repeated calls to this function will return the same error
 	once.Do(func() {

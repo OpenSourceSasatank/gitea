@@ -7,6 +7,12 @@ import (
 	"context"
 )
 
+// 【読み順 STEP 2】コンテキスト階層 — 停止シーケンスの時系列を定義。
+//   ShutdownContext → HammerContext → TerminateContext → ManagerContext の順にキャンセルされる。
+//   各コンポーネントは適切なコンテキストを監視し、段階的に停止する。
+//   STEP 3（manager_common.go）で Manager 構造体を確認。
+//   STEP 7（server_hooks.go）でサーバーがこのコンテキストをどう使うかを確認。
+//
 // Shutdown procedure:
 // * cancel ShutdownContext: the registered context consumers have time to do their cleanup (they could use the hammer context)
 // * cancel HammerContext: the all context consumers have limited time to do their cleanup (wait for a few seconds)

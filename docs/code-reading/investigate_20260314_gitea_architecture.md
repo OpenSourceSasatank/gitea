@@ -132,12 +132,17 @@ steps:
 ### 5. Graceful Shutdown
 
 **Gitea の実装:**
-`modules/graceful/` でコンテキストベースのグレースフル・シャットダウンを実装。シグナル受信時に：
-1. 新規リクエストの受付を停止
-2. 処理中のリクエストの完了を待機
-3. データベース接続等のリソースを順序立ててクリーンアップ
+`modules/graceful/` でコンテキストベースの 4 段階状態マシン（Init→Running→ShuttingDown→Terminate）によるグレースフル・シャットダウンを実装。シグナル受信時に：
+1. ShutdownContext キャンセル → 新規リクエストの受付を停止
+2. HammerContext キャンセル → 猶予時間後に残存コネクションを強制切断
+3. TerminateContext キャンセル → 終了コールバック実行（DB 切断等）
+4. ManagerContext キャンセル → プロセス終了
+
+さらに SIGHUP による FD 継承を使ったゼロダウンタイムリスタートも実装。
 
 **参考パス:** [`modules/graceful/`](../../modules/graceful/)
+
+**深掘り調査:** [reading_guide_graceful_shutdown.md](reading_guide_graceful_shutdown.md) — 11 ファイルに `【読み順 STEP 1-11】` コメント付与、4 つの設計パターン抽出
 
 **TCG Match Manager への適用:**
 Cloud Run はインスタンスのスケールダウン時に SIGTERM を送信する。現在の Gin サーバーに以下を追加することで、処理中のリクエスト（特にトランザクション中の結果登録）が途中で切断されることを防げる。
@@ -220,6 +225,7 @@ api := router.Group("/api/v1")
 
 - [認証・認可 コードリーディングガイド](reading_guide_auth.md) — コード内の `【読み順 STEP N】` コメントに対応する詳細ガイド
 - [AccessMode 深掘り調査](deep_dive_access_mode.md) — 3 層権限モデル、権限解決フロー、設計パターン抽出
+- [Graceful Shutdown コードリーディングガイド](reading_guide_graceful_shutdown.md) — 4 段階状態マシン、ゼロダウンタイムリスタート、4 つの設計パターン抽出
 
 ---
 

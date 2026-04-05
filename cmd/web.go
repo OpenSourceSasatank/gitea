@@ -247,6 +247,11 @@ func servePprof() {
 	finished()
 }
 
+// 【読み順 STEP 11】エントリポイント — Graceful Manager の初期化と全体統合。
+//   1. graceful.InitManager(managerCtx) で Manager を生成
+//   2. serveInstall() or serveInstalled() でサーバーを起動
+//   3. <-graceful.GetManager().Done() で全停止を待機
+//   STEP 1 〜 10 のすべてがここから起動される。
 func runWeb(ctx context.Context, cmd *cli.Command) error {
 	if subCmdName, valid := isValidDefaultSubCommand(cmd); !valid {
 		return fmt.Errorf("unknown command: %s", subCmdName)

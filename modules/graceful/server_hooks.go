@@ -9,6 +9,12 @@ import (
 	"code.gitea.io/gitea/modules/log"
 )
 
+// 【読み順 STEP 7】サーバーの停止フック — Manager からのシグナルを Server に伝達。
+//   1. awaitShutdown(): IsShutdown() or IsHammer() を select で待機
+//   2. doShutdown(): リスナーを Close し、新規接続の受付を停止
+//   3. doHammer(): 残存コネクションを強制切断
+//   STEP 6（server.go）の Server 構造体と連携して動作する。
+//
 // awaitShutdown waits for the shutdown signal from the Manager
 func (srv *Server) awaitShutdown() {
 	select {

@@ -28,6 +28,14 @@ func statusMsg(msg string) systemdNotifyMsg {
 	return systemdNotifyMsg("STATUS=" + msg)
 }
 
+// 【読み順 STEP 3】Manager 構造体 — Graceful Shutdown の中枢。
+//   4 つのコンテキスト（shutdownCtx, hammerCtx, terminateCtx, managerCtx）を
+//   段階的にキャンセルすることで、全コンポーネントに停止を通知する。
+//   - runningServerWaitGroup: 稼働中サーバーの完了待ち
+//   - terminateWaitGroup: 終了処理の完了待ち
+//   - toRunAtShutdown / toRunAtTerminate: 各フェーズで実行するコールバック
+//   STEP 2（context.go）でコンテキストの取得方法を確認。
+//   STEP 4（manager_unix.go）でシグナルハンドリングを確認。
 // Manager manages the graceful shutdown process
 type Manager struct {
 	ctx                    context.Context

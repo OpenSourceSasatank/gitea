@@ -33,6 +33,14 @@ func KillParent() {
 	})
 }
 
+// 【読み順 STEP 9】ゼロダウンタイムリスタート — fork+exec パターン。
+//   1. アクティブなリスナーからファイルディスクリプタ (FD) を抽出
+//   2. LISTEN_FDS 環境変数に FD 数をセット
+//   3. os.StartProcess() で新プロセスを起動（FD を継承）
+//   4. 新プロセスは getProvidedFDs()（net_unix.go）で FD を復元
+//   5. KillParent() で旧プロセスに SIGTERM を送信
+//   STEP 4（manager_unix.go）の start() で isChild を判定。
+//
 // RestartProcess starts a new process passing it the active listeners. It
 // doesn't fork, but starts a new process using the same environment and
 // arguments as when it was originally started. This allows for a newly

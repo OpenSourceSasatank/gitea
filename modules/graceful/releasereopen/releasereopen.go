@@ -8,6 +8,10 @@ import (
 	"sync"
 )
 
+// 【読み順 STEP 10】リソースの解放と再オープン — SIGUSR1 対応。
+//   ReleaseReopener インターフェースを実装したリソース（主にログファイル）を
+//   一括で解放→再オープンする。logrotate との連携に使用。
+//   STEP 5（manager_unix.go）の SIGUSR1 ハンドラから呼び出される。
 type ReleaseReopener interface {
 	ReleaseReopen() error
 }
